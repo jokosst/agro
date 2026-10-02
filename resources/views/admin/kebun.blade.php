@@ -10,13 +10,13 @@
     <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-4">
             <div>
-                <h3 class="font-bold text-xl text-slate-800">{{ $kebun->nama ?? 'Kebun Cabai Agrocom' }}</h3>
+                <h3 class="font-bold text-xl text-slate-800">{{ $kebun->nama }}</h3>
                 <p class="text-xs text-slate-500 mt-1">
-                    <i class="fa-solid fa-location-dot text-agri-600 mr-1"></i> {{ $kebun->lokasi_text ?? 'Sambas, Kalimantan Barat' }}
+                    <i class="fa-solid fa-location-dot text-agri-600 mr-1"></i> {{ $kebun->lokasi_text }}
                 </p>
             </div>
             <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-emerald-100 text-emerald-800">
-                Status: {{ $kebun->status ?? 'Aktif' }}
+                Status: {{ $kebun->status }}
             </span>
         </div>
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Web Admin - AGROCOM Kebun Cabai</title>
+    <title>Login Web Admin - AGROCOM</title>
     
     <!-- Favicon & Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
@@ -61,7 +61,7 @@
             <h1 class="text-3xl font-extrabold text-white tracking-tight">
                 AGRO<span class="text-emerald-400">COM</span>
             </h1>
-            <p class="text-slate-400 text-sm mt-1">Sistem Manajemen & Monitoring Kebun Cabai</p>
+            <p class="text-slate-400 text-sm mt-1">Sistem Manajemen & Monitoring Kebun </p>
         </div>
 
         <!-- Login Card -->

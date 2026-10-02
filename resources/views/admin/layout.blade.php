@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Dashboard') - AGROCOM Kebun Cabai</title>
+    <title>@yield('title', 'Admin Dashboard') - AGROCOM</title>
     
     <!-- Favicon & Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
@@ -90,7 +90,7 @@
                     <img src="{{ asset('apple-touch-icon.png') }}" alt="AGROCOM Logo" class="w-10 h-10 rounded-2xl object-cover shadow-lg border border-white/10">
                     <div>
                         <h1 class="text-xl font-extrabold tracking-wide text-white">AGRO<span class="text-emerald-400">COM</span></h1>
-                        <p class="text-[11px] text-agri-200">Manajemen Kebun Cabai</p>
+                        <p class="text-[11px] text-agri-200">Manajemen & Monitoring</p>
                     </div>
                 </div>
                 <button id="closeSidebarBtn" class="md:hidden text-white/70 hover:text-white p-1">
@@ -202,10 +202,7 @@
         <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sticky top-0 z-30 shadow-sm">
             <div class="flex items-center gap-3">
                 <h2 class="text-xl font-extrabold text-slate-800">@yield('page_title', 'Dashboard')</h2>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-agri-100 text-agri-800 border border-agri-200">
-                    <span class="w-2 h-2 rounded-full bg-agri-600 animate-pulse"></span>
-                    Kebun Cabai Agrocom - Sambas
-                </span>
+                
             </div>
 
             <div class="flex items-center gap-4">
