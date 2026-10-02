@@ -180,6 +180,14 @@
                     </select>
                 </div>
             </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Penugasan Kebun</label>
+                <select name="kebun_id" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold">
+                    @foreach($kebunList as $k)
+                        <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Alamat Email *</label>
@@ -233,6 +241,14 @@
                         <option value="admin">Administrator (Web Panel)</option>
                     </select>
                 </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Penugasan Kebun</label>
+                <select id="editKebunId" name="kebun_id" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold">
+                    @foreach($kebunList as $k)
+                        <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
@@ -298,6 +314,9 @@
         document.getElementById('editEmail').value = pekerja.email;
         document.getElementById('editPhone').value = pekerja.phone || '';
         document.getElementById('editRole').value = pekerja.role;
+        if (document.getElementById('editKebunId')) {
+            document.getElementById('editKebunId').value = pekerja.kebun_id || '';
+        }
         document.getElementById('modalEditPekerja').classList.remove('hidden');
     }
     function closeEditPekerjaModal() {

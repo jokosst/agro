@@ -39,12 +39,20 @@
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <form method="GET" action="{{ route('admin.laporan_masalah') }}" class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-1">
+                @if(Auth::user()->isPekerja())
+                    <div class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-agri-50 border border-agri-200 text-xs font-bold text-agri-800 flex-shrink-0">
+                        <i class="fa-solid fa-user-circle text-agri-600"></i>
+                        <span>Temuan Saya: {{ Auth::user()->name }}</span>
+                    </div>
+                @endif
+
                 <!-- Search Box -->
                 <div class="relative flex-1 sm:w-60">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
                     </div>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pelapor, kondisi, catatan..." 
+                    <input type="text" name="search" value="{{ request('search') }}" 
+                        placeholder="{{ Auth::user()->isAdmin() ? 'Cari pelapor, kondisi, catatan...' : 'Cari kondisi, gejala, catatan temuan Anda...' }}" 
                         class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-agri-600 focus:ring-2 focus:ring-agri-600/10">
                 </div>
 
@@ -102,7 +110,9 @@
                         <th class="p-4">Temuan & Gejala</th>
                         <th class="p-4">Dokumentasi Foto</th>
                         <th class="p-4 text-center">Status</th>
-                        <th class="p-4 text-center">Ubah Status</th>
+                        @if(Auth::user()->isAdmin())
+                            <th class="p-4 text-center">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -167,35 +177,54 @@
                                 </div>
                             </td>
                             <td class="p-4 text-center">
-                                @if($m->status === 'selesai')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center gap-1 mx-auto w-fit">
-                                        <i class="fa-solid fa-circle-check text-[10px]"></i> Selesai
-                                    </span>
-                                @elseif($m->status === 'ditangani')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200 flex items-center justify-center gap-1 mx-auto w-fit">
-                                        <i class="fa-solid fa-spinner animate-spin text-[10px]"></i> Ditangani
-                                    </span>
+                                @if(Auth::user()->isAdmin())
+                                    <form action="{{ route('admin.laporan_masalah.status', $m->id) }}" method="POST" class="inline-flex items-center gap-1">
+                                        @csrf
+                                        <select name="status" onchange="this.form.submit()" 
+                                            class="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-200 bg-slate-50 focus:border-agri-600 cursor-pointer {{ $m->status === 'selesai' ? 'text-emerald-700 bg-emerald-50/50' : ($m->status === 'ditangani' ? 'text-blue-700 bg-blue-50/50' : 'text-rose-700 bg-rose-50/50') }}">
+                                            <option value="menunggu" {{ $m->status === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                            <option value="ditangani" {{ $m->status === 'ditangani' ? 'selected' : '' }}>Ditangani</option>
+                                            <option value="selesai" {{ $m->status === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                        </select>
+                                    </form>
                                 @else
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200 flex items-center justify-center gap-1 mx-auto w-fit">
-                                        <i class="fa-solid fa-clock text-[10px]"></i> Menunggu
-                                    </span>
+                                    @if($m->status === 'selesai')
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            Selesai
+                                        </span>
+                                    @elseif($m->status === 'ditangani')
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                                            Ditangani
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                            Menunggu
+                                        </span>
+                                    @endif
                                 @endif
                             </td>
-                            <td class="p-4 text-center">
-                                <form action="{{ route('admin.laporan_masalah.status', $m->id) }}" method="POST" class="inline-flex items-center gap-1">
-                                    @csrf
-                                    <select name="status" onchange="this.form.submit()" 
-                                        class="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-200 bg-slate-50 focus:border-agri-600 cursor-pointer">
-                                        <option value="menunggu" {{ $m->status === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                        <option value="ditangani" {{ $m->status === 'ditangani' ? 'selected' : '' }}>Ditangani</option>
-                                        <option value="selesai" {{ $m->status === 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                    </select>
-                                </form>
-                            </td>
+                            @if(Auth::user()->isAdmin())
+                                <td class="p-4 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button type="button" onclick='openEditMasalahModal(@json($m))'
+                                            class="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition" title="Edit Laporan">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        <form action="{{ route('admin.laporan_masalah.destroy', $m->id) }}" method="POST" 
+                                            onsubmit="return confirm('Hapus laporan {{ $m->jenis_masalah }} ({{ $m->blok->kode_blok ?? 'Kebun' }}) tanggal {{ $m->created_at ? $m->created_at->format('d/m/Y') : '' }}?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Hapus Laporan">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-12 text-slate-400">
+                            <td colspan="{{ Auth::user()->isAdmin() ? 8 : 7 }}" class="text-center py-12 text-slate-400">
                                 <i class="fa-solid fa-shield-virus text-3xl mb-2 text-slate-300 block"></i>
                                 Tidak ada laporan masalah tanaman atau serangan hama yang sesuai dengan filter.
                             </td>
@@ -234,6 +263,97 @@
     </div>
 </div>
 
+@if(Auth::user()->isAdmin())
+<!-- MODAL EDIT LAPORAN MASALAH -->
+<div id="modalEditMasalah" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+                <h4 class="font-bold text-base text-slate-800">Edit Laporan Temuan Masalah & Hama</h4>
+                <p id="editMasalahPelapor" class="text-xs text-slate-500 font-medium mt-0.5"></p>
+            </div>
+            <button onclick="closeEditMasalahModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <form id="formEditMasalahAction" method="POST" class="space-y-4">
+            @csrf
+            @method('PUT')
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Masalah *</label>
+                    <select id="editJenisMasalah" name="jenis_masalah" required
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold focus:border-agri-600">
+                        <option value="Hama">Hama</option>
+                        <option value="Penyakit">Penyakit</option>
+                        <option value="Gulma">Gulma</option>
+                        <option value="Fisiologis">Fisiologis / Kekurangan Nutrisi</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jumlah Pohon Terdampak *</label>
+                    <input type="number" id="editJumlahTanaman" name="jumlah_tanaman" required min="1"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold focus:border-agri-600">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Lokasi Blok Kebun</label>
+                    <select id="editBlokId" name="blok_id"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold focus:border-agri-600">
+                        <option value="">Pilih Blok Lahan</option>
+                        @foreach($bloks as $b)
+                            <option value="{{ $b->id }}">{{ $b->kode_blok }} - {{ $b->nama_blok }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Baris / Bedengan</label>
+                    <input type="text" id="editBaris" name="baris" placeholder="Contoh: Baris 3"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-agri-600">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kondisi / Gejala Temuan</label>
+                    <input type="text" id="editKondisi" name="kondisi" placeholder="Contoh: Daun keriting kuning"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-agri-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status Penanganan *</label>
+                    <select id="editStatus" name="status" required
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold focus:border-agri-600">
+                        <option value="menunggu">Menunggu</option>
+                        <option value="ditangani">Sedang Ditangani</option>
+                        <option value="selesai">Selesai</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Catatan Tindakan / Rekomendasi</label>
+                <textarea id="editCatatanMasalah" name="catatan" rows="3" placeholder="Rencana penanganan atau catatan solusi..."
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-agri-600 focus:ring-2 focus:ring-agri-600/10"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeEditMasalahModal()" 
+                    class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                    Batal
+                </button>
+                <button type="submit" 
+                    class="px-5 py-2 text-xs font-bold bg-agri-700 hover:bg-agri-800 text-white rounded-xl shadow-sm transition">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
+
 <script>
     function showPhotoModal(url, title) {
         document.getElementById('modalPhotoImage').src = url;
@@ -244,5 +364,26 @@
     function closePhotoModal() {
         document.getElementById('photoModal').classList.add('hidden');
     }
+
+    @if(Auth::user()->isAdmin())
+    function openEditMasalahModal(m) {
+        document.getElementById('formEditMasalahAction').action = `/admin/laporan-masalah/${m.id}`;
+        document.getElementById('editMasalahPelapor').innerText = `Dilaporkan oleh: ${m.user ? m.user.name : 'Pekerja'}`;
+        
+        document.getElementById('editJenisMasalah').value = m.jenis_masalah || 'Hama';
+        document.getElementById('editJumlahTanaman').value = m.jumlah_tanaman || 1;
+        document.getElementById('editBlokId').value = m.blok_id || '';
+        document.getElementById('editBaris').value = m.baris || '';
+        document.getElementById('editKondisi').value = m.kondisi || '';
+        document.getElementById('editStatus').value = m.status || 'menunggu';
+        document.getElementById('editCatatanMasalah').value = m.catatan || '';
+        
+        document.getElementById('modalEditMasalah').classList.remove('hidden');
+    }
+
+    function closeEditMasalahModal() {
+        document.getElementById('modalEditMasalah').classList.add('hidden');
+    }
+    @endif
 </script>
 @endsection

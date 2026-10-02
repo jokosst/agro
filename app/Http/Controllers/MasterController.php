@@ -62,14 +62,15 @@ class MasterController extends Controller
             'kebun_id' => 'required|exists:kebun,id',
             'kode_blok' => 'required|string|max:50',
             'nama_blok' => 'required|string|max:255',
-            'status_kondisi' => 'required|in:normal,perhatian,masalah',
             'jumlah_tanaman' => 'required|integer|min:0',
-            'jumlah_masalah' => 'nullable|integer|min:0',
-            'jumlah_hama' => 'nullable|integer|min:0',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'keterangan' => 'nullable|string',
         ]);
+
+        $validated['status_kondisi'] = 'normal';
+        $validated['jumlah_masalah'] = 0;
+        $validated['jumlah_hama'] = 0;
 
         KebunBlok::create($validated);
 
@@ -82,16 +83,14 @@ class MasterController extends Controller
         $validated = $request->validate([
             'kode_blok' => 'required|string|max:50',
             'nama_blok' => 'required|string|max:255',
-            'status_kondisi' => 'required|in:normal,perhatian,masalah',
             'jumlah_tanaman' => 'required|integer|min:0',
-            'jumlah_masalah' => 'nullable|integer|min:0',
-            'jumlah_hama' => 'nullable|integer|min:0',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'keterangan' => 'nullable|string',
         ]);
 
         $blok->update($validated);
+        $blok->syncKondisiFromLaporan();
 
         return back()->with('success', 'Data Blok '.$blok->kode_blok.' berhasil diperbarui.');
     }
@@ -148,7 +147,7 @@ class MasterController extends Controller
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        $validated['kebun_id'] = $validated['kebun_id'] ?: Kebun::first()?->id;
+        $validated['kebun_id'] = ($validated['kebun_id'] ?? null) ?: Kebun::first()?->id;
 
         User::create($validated);
 
@@ -167,6 +166,10 @@ class MasterController extends Controller
             'kebun_id' => 'nullable|exists:kebun,id',
             'password' => 'nullable|string|min:6',
         ]);
+
+        if (array_key_exists('kebun_id', $validated) && empty($validated['kebun_id'])) {
+            $validated['kebun_id'] = Kebun::first()?->id;
+        }
 
         if (! empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);

@@ -91,19 +91,6 @@ class LaporanMasalahController extends Controller
             'status' => 'menunggu',
         ]);
 
-        // Update status blok kebun terkait
-        if ($blokId) {
-            $blok = KebunBlok::find($blokId);
-            if ($blok) {
-                $blok->increment('jumlah_masalah', 1);
-                if (strtolower($request->jenis_masalah) === 'hama') {
-                    $blok->increment('jumlah_hama', (int) $request->jumlah_tanaman);
-                }
-                $blok->status_kondisi = 'masalah';
-                $blok->save();
-            }
-        }
-
         return response()->json([
             'success' => true,
             'message' => 'Laporan masalah tanaman berhasil disimpan ke Google Drive dan database.',

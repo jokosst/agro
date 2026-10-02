@@ -130,7 +130,8 @@
                     <span>Rekap Laporan Harian</span>
                 </a>
 
-                <!-- SECTION DATA MASTER -->
+                @if(Auth::user()->isAdmin())
+                <!-- SECTION DATA MASTER (KHUSUS ADMINISTRATOR) -->
                 <div class="pt-5 pb-1 px-3 text-[11px] font-extrabold uppercase tracking-wider text-agri-200/60 flex items-center justify-between">
                     <span>Data Master</span>
                     <i class="fa-solid fa-sliders text-[10px]"></i>
@@ -159,6 +160,7 @@
                     <i class="fa-solid fa-shield-virus w-5 text-center"></i>
                     <span>Master Data Dukung</span>
                 </a>
+                @endif
             </nav>
         </div>
 
@@ -179,8 +181,13 @@
                         {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 2)) }}
                     </div>
                     <div class="min-w-0">
-                        <div class="font-bold text-xs text-white truncate">{{ Auth::user()->name ?? 'Admin' }}</div>
-                        <div class="text-[10px] text-slate-400 truncate">{{ Auth::user()->email ?? 'admin@agrocom.id' }}</div>
+                        <div class="font-bold text-xs text-white truncate flex items-center gap-1.5">
+                            <span>{{ Auth::user()->name ?? 'User' }}</span>
+                            <span class="text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase {{ Auth::user()->isAdmin() ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/30' : 'bg-amber-500/30 text-amber-300 border border-amber-400/30' }}">
+                                {{ Auth::user()->role }}
+                            </span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 truncate">{{ Auth::user()->email ?? 'user@agrocom.id' }}</div>
                     </div>
                 </div>
 
@@ -207,7 +214,12 @@
 
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
-                    <div class="text-sm font-bold text-slate-800">{{ Auth::user()->name ?? 'Admin Pemilik' }}</div>
+                    <div class="text-sm font-bold text-slate-800 flex items-center gap-1.5 justify-end">
+                        <span>{{ Auth::user()->name ?? 'Pengguna' }}</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase {{ Auth::user()->isAdmin() ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
+                            {{ Auth::user()->role }}
+                        </span>
+                    </div>
                     <div class="text-xs text-slate-500">{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</div>
                 </div>
                 <div class="w-10 h-10 rounded-full bg-agri-700 text-white flex items-center justify-center font-extrabold shadow-md border-2 border-agri-200">

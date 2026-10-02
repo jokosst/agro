@@ -29,6 +29,26 @@ class LaporanMasalah extends Model
         'jumlah_tanaman' => 'integer',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function (self $laporan): void {
+            if ($laporan->blok_id) {
+                $laporan->blok?->syncKondisiFromLaporan();
+            }
+
+            if ($laporan->wasChanged('blok_id') && $laporan->getOriginal('blok_id')) {
+                $oldBlok = KebunBlok::find($laporan->getOriginal('blok_id'));
+                $oldBlok?->syncKondisiFromLaporan();
+            }
+        });
+
+        static::deleted(function (self $laporan): void {
+            if ($laporan->blok_id) {
+                $laporan->blok?->syncKondisiFromLaporan();
+            }
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

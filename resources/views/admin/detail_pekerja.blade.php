@@ -190,11 +190,11 @@
                         Kondisi Gulma
                     </span>
                     <div class="text-2xl font-black text-emerald-900 mt-2">
-                        {{ $laporanHarian->gulma ?? 'Bersih' }}
+                        {{ $laporanHarian?->gulma ?? 'Belum Ada Laporan' }}
                     </div>
                 </div>
                 <p class="text-xs text-emerald-800 mt-3 font-medium line-clamp-2">
-                    {{ $laporanHarian->kendala ? 'Catatan: ' . $laporanHarian->kendala : 'Sebagian telah dibersihkan' }}
+                    {{ $laporanHarian?->kendala ? 'Catatan: ' . $laporanHarian->kendala : ($laporanHarian ? 'Sebagian telah dibersihkan' : 'Pekerja belum mengisi laporan harian') }}
                 </p>
             </div>
 

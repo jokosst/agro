@@ -22,45 +22,88 @@ class AdminController extends Controller
     public function dashboard()
     {
         $today = Carbon::today();
+        $user = auth()->user();
+        $isPekerja = $user && $user->isPekerja();
         $kebun = Kebun::first();
-        $totalPekerja = User::where('role', 'pekerja')->count() ?: 1;
-        $pekerjaHadir = Absensi::where('tanggal', $today)->whereNotNull('jam_masuk')->count();
-        $laporanHariIni = LaporanHarian::where('tanggal', $today)->count();
-        $masalahTanaman = LaporanMasalah::where('status', '!=', 'selesai')->sum('jumlah_tanaman');
-        $totalHama = KebunBlok::sum('jumlah_hama');
 
-        $absensiHariIni = Absensi::with('user')->where('tanggal', $today)->latest()->get();
-        $masalahTerbaru = LaporanMasalah::with(['user', 'blok'])->latest()->take(5)->get();
-        $bloks = KebunBlok::all();
+        if ($isPekerja) {
+            $totalPekerja = 1;
+            $pekerjaHadir = Absensi::where('user_id', $user->id)->where('tanggal', $today)->whereNotNull('jam_masuk')->count();
+            $laporanHariIni = LaporanHarian::where('user_id', $user->id)->where('tanggal', $today)->count();
+            $masalahTanaman = LaporanMasalah::where('user_id', $user->id)->where('status', '!=', 'selesai')->sum('jumlah_tanaman');
+            $totalHama = LaporanMasalah::where('user_id', $user->id)->where('jenis_masalah', 'Hama')->sum('jumlah_tanaman');
 
-        // 1. Data Grafik Tren Kehadiran 7 Hari Terakhir
-        $chartDates = [];
-        $chartHadir = [];
-        $chartTidakHadir = [];
+            $absensiHariIni = Absensi::with('user')->where('user_id', $user->id)->where('tanggal', $today)->latest()->get();
+            $masalahTerbaru = LaporanMasalah::with(['user', 'blok'])->where('user_id', $user->id)->latest()->take(5)->get();
+            $bloks = KebunBlok::all();
 
-        for ($i = 6; $i >= 0; $i--) {
-            $d = Carbon::today()->subDays($i);
-            $chartDates[] = $d->translatedFormat('D, d M');
-            $hadirCount = Absensi::where('tanggal', $d->toDateString())->whereNotNull('jam_masuk')->count();
-            $chartHadir[] = $hadirCount;
-            $chartTidakHadir[] = max(0, $totalPekerja - $hadirCount);
-        }
+            $chartDates = [];
+            $chartHadir = [];
+            $chartTidakHadir = [];
 
-        // 2. Data Grafik Masalah Tanaman (Berdasarkan Jenis)
-        $masalahGroup = LaporanMasalah::selectRaw('jenis_masalah, count(*) as count')
-            ->groupBy('jenis_masalah')
-            ->pluck('count', 'jenis_masalah')
-            ->toArray();
+            for ($i = 6; $i >= 0; $i--) {
+                $d = Carbon::today()->subDays($i);
+                $chartDates[] = $d->translatedFormat('D, d M');
+                $hadirCount = Absensi::where('user_id', $user->id)->where('tanggal', $d->toDateString())->whereNotNull('jam_masuk')->count();
+                $chartHadir[] = $hadirCount;
+                $chartTidakHadir[] = $hadirCount > 0 ? 0 : 1;
+            }
 
-        $chartJenisLabels = ! empty($masalahGroup) ? array_keys($masalahGroup) : ['Hama', 'Penyakit', 'Gulma', 'Fisiologis'];
-        $chartJenisData = ! empty($masalahGroup) ? array_values($masalahGroup) : [5, 2, 1, 0];
+            $masalahGroup = LaporanMasalah::where('user_id', $user->id)
+                ->selectRaw('jenis_masalah, count(*) as count')
+                ->groupBy('jenis_masalah')
+                ->pluck('count', 'jenis_masalah')
+                ->toArray();
 
-        // 3. Data Distribusi Tanaman Sakit per Blok
-        $chartBlokLabels = [];
-        $chartBlokData = [];
-        foreach ($bloks as $b) {
-            $chartBlokLabels[] = $b->kode_blok;
-            $chartBlokData[] = $b->jumlah_masalah ?: ($b->laporanMasalah()->where('status', '!=', 'selesai')->sum('jumlah_tanaman') ?: 0);
+            $chartJenisLabels = ! empty($masalahGroup) ? array_keys($masalahGroup) : ['Hama', 'Penyakit', 'Gulma', 'Fisiologis'];
+            $chartJenisData = ! empty($masalahGroup) ? array_values($masalahGroup) : [0, 0, 0, 0];
+
+            $chartBlokLabels = [];
+            $chartBlokData = [];
+            foreach ($bloks as $b) {
+                $chartBlokLabels[] = $b->kode_blok;
+                $chartBlokData[] = $b->laporanMasalah()->where('user_id', $user->id)->where('status', '!=', 'selesai')->sum('jumlah_tanaman') ?: 0;
+            }
+        } else {
+            $totalPekerja = User::where('role', 'pekerja')->count() ?: 1;
+            $pekerjaHadir = Absensi::where('tanggal', $today)->whereNotNull('jam_masuk')->count();
+            $laporanHariIni = LaporanHarian::where('tanggal', $today)->count();
+            $masalahTanaman = LaporanMasalah::where('status', '!=', 'selesai')->sum('jumlah_tanaman');
+            $totalHama = KebunBlok::sum('jumlah_hama');
+
+            $absensiHariIni = Absensi::with('user')->where('tanggal', $today)->latest()->get();
+            $masalahTerbaru = LaporanMasalah::with(['user', 'blok'])->latest()->take(5)->get();
+            $bloks = KebunBlok::all();
+
+            // 1. Data Grafik Tren Kehadiran 7 Hari Terakhir
+            $chartDates = [];
+            $chartHadir = [];
+            $chartTidakHadir = [];
+
+            for ($i = 6; $i >= 0; $i--) {
+                $d = Carbon::today()->subDays($i);
+                $chartDates[] = $d->translatedFormat('D, d M');
+                $hadirCount = Absensi::where('tanggal', $d->toDateString())->whereNotNull('jam_masuk')->count();
+                $chartHadir[] = $hadirCount;
+                $chartTidakHadir[] = max(0, $totalPekerja - $hadirCount);
+            }
+
+            // 2. Data Grafik Masalah Tanaman (Berdasarkan Jenis)
+            $masalahGroup = LaporanMasalah::selectRaw('jenis_masalah, count(*) as count')
+                ->groupBy('jenis_masalah')
+                ->pluck('count', 'jenis_masalah')
+                ->toArray();
+
+            $chartJenisLabels = ! empty($masalahGroup) ? array_keys($masalahGroup) : ['Hama', 'Penyakit', 'Gulma', 'Fisiologis'];
+            $chartJenisData = ! empty($masalahGroup) ? array_values($masalahGroup) : [5, 2, 1, 0];
+
+            // 3. Data Distribusi Tanaman Sakit per Blok
+            $chartBlokLabels = [];
+            $chartBlokData = [];
+            foreach ($bloks as $b) {
+                $chartBlokLabels[] = $b->kode_blok;
+                $chartBlokData[] = $b->jumlah_masalah ?: ($b->laporanMasalah()->where('status', '!=', 'selesai')->sum('jumlah_tanaman') ?: 0);
+            }
         }
 
         return view('admin.dashboard', compact(
@@ -112,19 +155,103 @@ class AdminController extends Controller
      */
     public function absensi(Request $request)
     {
-        $query = Absensi::with('user')->latest('tanggal');
+        $user = auth()->user();
+        $isPekerja = $user && $user->isPekerja();
+        $query = Absensi::with('user')->latest('tanggal')->latest('id');
 
+        // Jika pekerja login, batasi hanya data pekerja itu sendiri
+        if ($isPekerja) {
+            $query->where('user_id', $user->id);
+            $pekerjaList = collect([$user]);
+        } else {
+            // Filter Pekerja (Khusus Admin)
+            if ($request->filled('pekerja_id')) {
+                $query->where('user_id', $request->pekerja_id);
+            }
+            $pekerjaList = User::where('role', 'pekerja')->orderBy('name')->get();
+
+            // Filter Pencarian Teks (Khusus Admin)
+            if ($request->filled('search')) {
+                $search = trim($request->search);
+                $query->whereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+        }
+
+        // Filter Tanggal Tertentu
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
         }
-        if ($request->filled('pekerja_id')) {
-            $query->where('user_id', $request->pekerja_id);
+
+        // Filter Status Pekerjaan
+        if ($request->filled('status')) {
+            if ($request->status === 'belum_selesai') {
+                $query->where(function ($q) {
+                    $q->whereNull('status_pekerjaan')
+                        ->orWhere('status_pekerjaan', '')
+                        ->orWhere('status_pekerjaan', 'belum selesai');
+                });
+            } else {
+                $query->where('status_pekerjaan', $request->status);
+            }
         }
 
-        $absensiList = $query->paginate(15)->withQueryString();
-        $pekerjaList = User::where('role', 'pekerja')->get();
+        // Jumlah item per halaman (default 10, bisa dipilih 5, 10, 25, 50)
+        $perPage = (int) $request->input('per_page', 10);
+        $perPage = in_array($perPage, [5, 10, 25, 50, 100]) ? $perPage : 10;
+
+        $absensiList = $query->paginate($perPage)->withQueryString();
 
         return view('admin.absensi', compact('absensiList', 'pekerjaList'));
+    }
+
+    /**
+     * Update Data Absensi Pekerja
+     */
+    public function updateAbsensi(Request $request, $id)
+    {
+        $absensi = Absensi::findOrFail($id);
+
+        $request->validate([
+            'tanggal' => 'required|date',
+            'jam_masuk' => 'nullable|string',
+            'jam_pulang' => 'nullable|string',
+            'status_pekerjaan' => 'nullable|in:selesai,sebagian,belum,belum_selesai',
+            'is_valid_geofence_masuk' => 'nullable|boolean',
+            'is_valid_geofence_pulang' => 'nullable|boolean',
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
+        $statusPekerjaan = $request->status_pekerjaan;
+        if ($statusPekerjaan === 'belum_selesai') {
+            $statusPekerjaan = 'belum';
+        }
+
+        $absensi->update([
+            'tanggal' => $request->tanggal,
+            'jam_masuk' => $request->jam_masuk ?: null,
+            'jam_pulang' => $request->jam_pulang ?: null,
+            'status_pekerjaan' => $statusPekerjaan,
+            'is_valid_geofence_masuk' => $request->has('is_valid_geofence_masuk') ? $request->boolean('is_valid_geofence_masuk') : $absensi->is_valid_geofence_masuk,
+            'is_valid_geofence_pulang' => $request->has('is_valid_geofence_pulang') ? $request->boolean('is_valid_geofence_pulang') : $absensi->is_valid_geofence_pulang,
+            'catatan' => $request->catatan,
+        ]);
+
+        return back()->with('success', 'Data absensi pekerja berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus Data Absensi Pekerja
+     */
+    public function destroyAbsensi($id)
+    {
+        $absensi = Absensi::findOrFail($id);
+        $absensi->delete();
+
+        return back()->with('success', 'Data riwayat absensi berhasil dihapus.');
     }
 
     /**
@@ -132,7 +259,14 @@ class AdminController extends Controller
      */
     public function laporanMasalah(Request $request)
     {
+        $user = auth()->user();
+        $isPekerja = $user && $user->isPekerja();
         $query = LaporanMasalah::with(['user', 'blok'])->latest('created_at');
+
+        // Jika pekerja login, hanya tampilkan laporan temuan miliknya sendiri
+        if ($isPekerja) {
+            $query->where('user_id', $user->id);
+        }
 
         if ($request->filled('jenis') && $request->jenis !== 'semua') {
             $query->where('jenis_masalah', $request->jenis);
@@ -156,12 +290,16 @@ class AdminController extends Controller
 
         $masalahList = $query->paginate(15)->withQueryString();
 
-        // Metrics Real
-        $totalTemuan = LaporanMasalah::count();
-        $menungguCount = LaporanMasalah::where('status', 'menunggu')->count();
-        $ditanganiCount = LaporanMasalah::where('status', 'ditangani')->count();
-        $selesaiCount = LaporanMasalah::where('status', 'selesai')->count();
-        $totalPohonSakit = LaporanMasalah::where('status', '!=', 'selesai')->sum('jumlah_tanaman');
+        // Metrics Real (Scoped jika pekerja)
+        $metricsQuery = LaporanMasalah::query();
+        if ($isPekerja) {
+            $metricsQuery->where('user_id', $user->id);
+        }
+        $totalTemuan = (clone $metricsQuery)->count();
+        $menungguCount = (clone $metricsQuery)->where('status', 'menunggu')->count();
+        $ditanganiCount = (clone $metricsQuery)->where('status', 'ditangani')->count();
+        $selesaiCount = (clone $metricsQuery)->where('status', 'selesai')->count();
+        $totalPohonSakit = (clone $metricsQuery)->where('status', '!=', 'selesai')->sum('jumlah_tanaman');
 
         $bloks = KebunBlok::all();
 
@@ -187,6 +325,47 @@ class AdminController extends Controller
         $masalah->save();
 
         return back()->with('success', 'Status laporan temuan berhasil diubah menjadi: '.ucfirst($status));
+    }
+
+    /**
+     * Update Data Laporan Masalah & Hama
+     */
+    public function updateMasalah(Request $request, $id)
+    {
+        $masalah = LaporanMasalah::findOrFail($id);
+
+        $request->validate([
+            'jenis_masalah' => 'required|string|max:100',
+            'blok_id' => 'nullable|exists:kebun_bloks,id',
+            'baris' => 'nullable|string|max:100',
+            'kondisi' => 'nullable|string|max:255',
+            'jumlah_tanaman' => 'required|integer|min:1',
+            'status' => 'required|in:menunggu,ditangani,selesai',
+            'catatan' => 'nullable|string',
+        ]);
+
+        $masalah->update([
+            'jenis_masalah' => $request->jenis_masalah,
+            'blok_id' => $request->blok_id ?: null,
+            'baris' => $request->baris ?: null,
+            'kondisi' => $request->kondisi ?: null,
+            'jumlah_tanaman' => $request->jumlah_tanaman,
+            'status' => $request->status,
+            'catatan' => $request->catatan,
+        ]);
+
+        return back()->with('success', 'Laporan masalah/hama tanaman berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus Data Laporan Masalah & Hama
+     */
+    public function destroyMasalah($id)
+    {
+        $masalah = LaporanMasalah::findOrFail($id);
+        $masalah->delete();
+
+        return back()->with('success', 'Laporan masalah/hama berhasil dihapus.');
     }
 
     /**
@@ -218,8 +397,17 @@ class AdminController extends Controller
             $periodeText = 'Semua Data';
         }
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+        $user = auth()->user();
+        $isPekerja = $user && $user->isPekerja();
+
+        if ($isPekerja) {
+            $query->where('user_id', $user->id);
+            $pekerjaList = collect([$user]);
+        } else {
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+            $pekerjaList = User::where('role', 'pekerja')->get();
         }
 
         $laporanList = $query->latest('tanggal')->paginate(15)->withQueryString();
@@ -235,9 +423,10 @@ class AdminController extends Controller
             ->whereNotNull('jam_masuk')
             ->count();
 
-        $totalPekerjaAktif = User::where('role', 'pekerja')->count() ?: 1;
+        $totalPekerjaAktif = $isPekerja ? 1 : (User::where('role', 'pekerja')->count() ?: 1);
 
-        $masalahPeriode = LaporanMasalah::when($period === 'harian', fn ($q) => $q->whereDate('created_at', $selectedDate))
+        $masalahPeriode = LaporanMasalah::when($isPekerja, fn ($q) => $q->where('user_id', $user->id))
+            ->when($period === 'harian', fn ($q) => $q->whereDate('created_at', $selectedDate))
             ->when($period === 'mingguan', fn ($q) => $q->whereBetween('created_at', [$carbonDate->copy()->startOfWeek()->startOfDay(), $carbonDate->copy()->endOfWeek()->endOfDay()]))
             ->when($period === 'bulanan', fn ($q) => $q->whereYear('created_at', $carbonDate->year)->whereMonth('created_at', $carbonDate->month))
             ->sum('jumlah_tanaman');
@@ -252,14 +441,17 @@ class AdminController extends Controller
             for ($i = 0; $i < 7; $i++) {
                 $cur = $carbonDate->copy()->startOfWeek()->addDays($i);
                 $chartLabels[] = $cur->translatedFormat('D, d M');
-                $chartReportsCount[] = LaporanHarian::whereDate('tanggal', $cur->toDateString())->count();
+                $chartReportsCount[] = LaporanHarian::when($isPekerja, fn ($q) => $q->where('user_id', $user->id))
+                    ->whereDate('tanggal', $cur->toDateString())
+                    ->count();
             }
         } elseif ($period === 'bulanan') {
             $daysInMonth = $carbonDate->daysInMonth;
             for ($d = 1; $d <= $daysInMonth; $d += 3) {
                 $cur = Carbon::create($carbonDate->year, $carbonDate->month, min($d, $daysInMonth));
                 $chartLabels[] = $cur->format('d/m');
-                $chartReportsCount[] = LaporanHarian::whereYear('tanggal', $carbonDate->year)
+                $chartReportsCount[] = LaporanHarian::when($isPekerja, fn ($q) => $q->where('user_id', $user->id))
+                    ->whereYear('tanggal', $carbonDate->year)
                     ->whereMonth('tanggal', $carbonDate->month)
                     ->whereDay('tanggal', $cur->day)
                     ->count();
@@ -269,11 +461,11 @@ class AdminController extends Controller
             for ($i = 6; $i >= 0; $i--) {
                 $cur = Carbon::parse($selectedDate)->subDays($i);
                 $chartLabels[] = $cur->translatedFormat('d M');
-                $chartReportsCount[] = LaporanHarian::whereDate('tanggal', $cur->toDateString())->count();
+                $chartReportsCount[] = LaporanHarian::when($isPekerja, fn ($q) => $q->where('user_id', $user->id))
+                    ->whereDate('tanggal', $cur->toDateString())
+                    ->count();
             }
         }
-
-        $pekerjaList = User::where('role', 'pekerja')->get();
 
         return view('admin.laporan_harian', compact(
             'laporanList',
@@ -298,6 +490,11 @@ class AdminController extends Controller
      */
     public function detailPekerja($id, Request $request)
     {
+        $authUser = auth()->user();
+        if ($authUser && $authUser->isPekerja() && $authUser->id != $id) {
+            abort(403, 'Akses Ditolak. Anda hanya dapat melihat detail laporan kerja Anda sendiri.');
+        }
+
         $pekerja = User::with('kebun')->findOrFail($id);
 
         // Cari tanggal laporan: jika diberikan di request gunakan itu, jika tidak cari tanggal absensi/laporan terbaru

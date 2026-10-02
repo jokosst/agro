@@ -26,21 +26,25 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     // 3. Rekap Absensi
     Route::get('/absensi', [AdminController::class, 'absensi'])->name('absensi');
+    Route::put('/absensi/{id}', [AdminController::class, 'updateAbsensi'])->name('absensi.update')->middleware('admin');
+    Route::delete('/absensi/{id}', [AdminController::class, 'destroyAbsensi'])->name('absensi.destroy')->middleware('admin');
 
     // 4. Detail Laporan Pekerja (Harian Lengkap)
     Route::get('/pekerja/{id}/detail', [AdminController::class, 'detailPekerja'])->name('detail_pekerja');
 
     // 5. Laporan Masalah & Hama
     Route::get('/laporan-masalah', [AdminController::class, 'laporanMasalah'])->name('laporan_masalah');
-    Route::post('/laporan-masalah/{id}/status', [AdminController::class, 'updateStatusMasalah'])->name('laporan_masalah.status');
+    Route::post('/laporan-masalah/{id}/status', [AdminController::class, 'updateStatusMasalah'])->name('laporan_masalah.status')->middleware('admin');
+    Route::put('/laporan-masalah/{id}', [AdminController::class, 'updateMasalah'])->name('laporan_masalah.update')->middleware('admin');
+    Route::delete('/laporan-masalah/{id}', [AdminController::class, 'destroyMasalah'])->name('laporan_masalah.destroy')->middleware('admin');
 
     // 6. Rekap Laporan Harian, Mingguan, Bulanan
     Route::get('/laporan-harian', [AdminController::class, 'laporanHarian'])->name('laporan_harian');
 
     // ==========================================
-    // DATA MASTER (CRUD DINAMIS)
+    // DATA MASTER (CRUD DINAMIS - KHUSUS ADMIN)
     // ==========================================
-    Route::prefix('master')->name('master.')->group(function () {
+    Route::prefix('master')->name('master.')->middleware('admin')->group(function () {
 
         // Master Lokasi / Lahan & Blok
         Route::get('/lahan', [MasterController::class, 'lahan'])->name('lahan');
@@ -71,6 +75,6 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     });
 
     // Backward compatibility redirects for old URLs
-    Route::get('/pekerja', fn () => redirect()->route('admin.master.pekerja'));
-    Route::get('/kebun', fn () => redirect()->route('admin.master.lahan'));
+    Route::get('/pekerja', fn () => redirect()->route('admin.master.pekerja'))->middleware('admin');
+    Route::get('/kebun', fn () => redirect()->route('admin.master.lahan'))->middleware('admin');
 });

@@ -46,8 +46,8 @@
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                     <span class="text-xs font-bold text-slate-700">Geofence Radius {{ $kebun->radius_meter ?? 50 }}m</span>
-                    <span id="mapEngineBadge" class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600">
-                        Memuat Peta...
+                    <span id="mapEngineBadge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <i class="fa-solid fa-satellite text-emerald-600 mr-1"></i> Satelit Esri High-Res
                     </span>
                 </div>
                 <div class="flex items-center gap-1.5">
@@ -138,16 +138,12 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-@if(!empty($googleMapsApiKey))
-<script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey }}&callback=initGoogleMap" async defer></script>
-@endif
 
 <script>
     const kebunLat = {{ $kebun->latitude ?? -0.1234000 }};
     const kebunLng = {{ $kebun->longitude ?? 109.3456000 }};
     const radiusMeters = {{ $kebun->radius_meter ?? 50 }};
     const bloksData = @json($bloks);
-    const googleApiKey = "{{ $googleMapsApiKey }}";
 
     let activeEngine = 'none';
     let leafletMap = null;
@@ -156,30 +152,9 @@
     let streetLayer = null;
     let markers = [];
 
-    // Catch Google Maps Authentication Failure (e.g. API not activated, Billing not enabled)
-    window.gm_authFailure = function() {
-        console.warn("Google Maps Auth Failure (API Key / Billing belum aktif). Beralih ke High-Res Esri Satellite.");
-        const badge = document.getElementById('mapEngineBadge');
-        if (badge) {
-            badge.innerHTML = '<span class="text-amber-700 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Google Maps Membutuhkan Aktivasi API &rarr; Menggunakan Satelit Esri</span>';
-        }
-        initLeafletMap();
-    };
-
-    // Initialize Map on Page Load
+    // Initialize Map on Page Load with High-Res Satellite Engine
     document.addEventListener('DOMContentLoaded', function () {
-        // If Google Maps API key is not provided, start Leaflet immediately
-        if (!googleApiKey) {
-            initLeafletMap();
-        } else {
-            // Give Google Maps script 2.5 seconds to load callback, otherwise fallback to Leaflet
-            setTimeout(function () {
-                if (activeEngine === 'none') {
-                    console.log("Fallback to Leaflet (Google Maps timeout / script belum siap)");
-                    initLeafletMap();
-                }
-            }, 2500);
-        }
+        initLeafletMap();
     });
 
     // 1. Google Maps Engine Initializer

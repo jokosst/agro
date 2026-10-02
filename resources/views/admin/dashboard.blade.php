@@ -11,10 +11,22 @@
         <!-- Card 1: Kehadiran -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Kehadiran Hari Ini</p>
-                <h3 class="text-2xl font-extrabold text-slate-800 mt-1">{{ $pekerjaHadir }} / {{ $totalPekerja }}</h3>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    {{ Auth::user()->isAdmin() ? 'Kehadiran Hari Ini' : 'Status Presensi Saya' }}
+                </p>
+                <h3 class="text-2xl font-extrabold text-slate-800 mt-1">
+                    @if(Auth::user()->isAdmin())
+                        {{ $pekerjaHadir }} / {{ $totalPekerja }}
+                    @else
+                        {{ $pekerjaHadir > 0 ? 'Sudah Hadir' : 'Belum Hadir' }}
+                    @endif
+                </h3>
                 <span class="inline-block mt-2 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                    {{ $totalPekerja > 0 ? round(($pekerjaHadir / $totalPekerja) * 100) : 0 }}% Tingkat Kehadiran
+                    @if(Auth::user()->isAdmin())
+                        {{ $totalPekerja > 0 ? round(($pekerjaHadir / $totalPekerja) * 100) : 0 }}% Tingkat Kehadiran
+                    @else
+                        {{ $pekerjaHadir > 0 ? 'Presensi Tercatat' : 'Silakan Presensi di App' }}
+                    @endif
                 </span>
             </div>
             <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">
@@ -25,7 +37,9 @@
         <!-- Card 2: Tanaman Bermasalah -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tanaman Bermasalah</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    {{ Auth::user()->isAdmin() ? 'Tanaman Bermasalah' : 'Temuan Tanaman Sakit' }}
+                </p>
                 <h3 class="text-2xl font-extrabold text-rose-600 mt-1">{{ $masalahTanaman }} <span class="text-sm font-normal text-slate-500">pohon</span></h3>
                 <span class="inline-block mt-2 text-xs font-medium text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
                     Perlu Penanganan
@@ -39,7 +53,9 @@
         <!-- Card 3: Serangan Hama -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Laporan Hama</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    {{ Auth::user()->isAdmin() ? 'Laporan Hama' : 'Temuan Hama Saya' }}
+                </p>
                 <h3 class="text-2xl font-extrabold text-amber-600 mt-1">{{ $totalHama }} <span class="text-sm font-normal text-slate-500">laporan</span></h3>
                 <span class="inline-block mt-2 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
                     Kutu Kebul & Ulat
@@ -53,7 +69,9 @@
         <!-- Card 4: Laporan Harian -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Laporan Harian Masuk</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    {{ Auth::user()->isAdmin() ? 'Laporan Harian Masuk' : 'Laporan Harian Saya' }}
+                </p>
                 <h3 class="text-2xl font-extrabold text-agri-700 mt-1">{{ $laporanHariIni }} <span class="text-sm font-normal text-slate-500">laporan</span></h3>
                 <span class="inline-block mt-2 text-xs font-medium text-agri-700 bg-agri-50 px-2 py-0.5 rounded-md">
                     Hari Ini Terverifikasi
@@ -72,9 +90,12 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-column text-emerald-600"></i> Tren Kehadiran Pekerja (7 Hari Terakhir)
+                        <i class="fa-solid fa-chart-column text-emerald-600"></i>
+                        {{ Auth::user()->isAdmin() ? 'Tren Kehadiran Pekerja (7 Hari Terakhir)' : 'Riwayat Kehadiran Saya (7 Hari Terakhir)' }}
                     </h3>
-                    <p class="text-xs text-slate-500">Perbandingan jumlah pekerja hadir vs tidak hadir setiap hari</p>
+                    <p class="text-xs text-slate-500">
+                        {{ Auth::user()->isAdmin() ? 'Perbandingan jumlah pekerja hadir vs tidak hadir setiap hari' : 'Log status kehadiran presensi harian Anda' }}
+                    </p>
                 </div>
                 <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <i class="fa-solid fa-circle text-[8px] mr-1 text-emerald-500 animate-pulse"></i> Real-time DB
@@ -91,7 +112,8 @@
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-pie text-amber-500"></i> Kategori Masalah Kebun
+                            <i class="fa-solid fa-chart-pie text-amber-500"></i>
+                            {{ Auth::user()->isAdmin() ? 'Kategori Masalah Kebun' : 'Kategori Temuan Masalah Saya' }}
                         </h3>
                         <p class="text-xs text-slate-500">Distribusi jenis gangguan & hama</p>
                     </div>
@@ -114,8 +136,12 @@
         <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="font-bold text-lg text-slate-800">Absensi Pekerja Hari Ini</h3>
-                    <p class="text-xs text-slate-500">Log kehadiran selfie GPS pekerja kebun real-time</p>
+                    <h3 class="font-bold text-lg text-slate-800">
+                        {{ Auth::user()->isAdmin() ? 'Absensi Pekerja Hari Ini' : 'Status Presensi Saya Hari Ini' }}
+                    </h3>
+                    <p class="text-xs text-slate-500">
+                        {{ Auth::user()->isAdmin() ? 'Log kehadiran selfie GPS seluruh pekerja kebun real-time' : 'Log presensi kehadiran selfie GPS Anda hari ini' }}
+                    </p>
                 </div>
                 <a href="{{ route('admin.absensi') }}" class="text-xs font-semibold text-agri-700 hover:underline">Lihat Semua &rarr;</a>
             </div>

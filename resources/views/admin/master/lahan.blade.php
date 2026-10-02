@@ -169,6 +169,10 @@
                                     •
                                     <span class="{{ $blok->jumlah_masalah > 0 ? 'text-rose-600 font-bold' : 'text-slate-400' }}">{{ $blok->jumlah_masalah }} Masalah</span>
                                 </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5 flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-arrows-rotate text-[9px] text-emerald-600"></i>
+                                    <span>Otomatis Laporan</span>
+                                </div>
                             </td>
                             <td class="p-4 font-mono text-xs text-slate-500">
                                 <div>{{ $blok->latitude ?: '-' }},</div>
@@ -238,12 +242,9 @@
                         class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-agri-600 focus:ring-2 focus:ring-agri-600/10">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status Kondisi Awal</label>
-                    <select name="status_kondisi" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-agri-600">
-                        <option value="normal">Normal (Subur)</option>
-                        <option value="perhatian">Perlu Perhatian</option>
-                        <option value="masalah">Ada Masalah</option>
-                    </select>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jumlah Pohon / Tanaman *</label>
+                    <input type="number" name="jumlah_tanaman" value="100" required min="1"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-agri-600 focus:ring-2 focus:ring-agri-600/10">
                 </div>
             </div>
 
@@ -253,21 +254,10 @@
                     class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-agri-600 focus:ring-2 focus:ring-agri-600/10">
             </div>
 
-            <div class="grid grid-cols-3 gap-3">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jml Pohon</label>
-                    <input type="number" name="jumlah_tanaman" value="100" required min="1"
-                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jml Hama</label>
-                    <input type="number" name="jumlah_hama" value="0" min="0"
-                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jml Masalah</label>
-                    <input type="number" name="jumlah_masalah" value="0" min="0"
-                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+            <div class="p-3 bg-emerald-50/80 rounded-xl border border-emerald-100 flex items-start gap-2.5 text-xs text-emerald-800">
+                <i class="fa-solid fa-circle-info text-emerald-600 mt-0.5"></i>
+                <div class="leading-relaxed">
+                    <strong>Sinkronisasi Otomatis:</strong> Data status kondisi, jumlah hama, dan masalah tanaman dihitung secara otomatis dari <strong>Laporan Masalah & Hama</strong> pekerja/mandor, sehingga tidak perlu diinput manual di Master Lahan.
                 </div>
             </div>
 
@@ -342,12 +332,9 @@
                         class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-agri-600 focus:ring-2 focus:ring-agri-600/10">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status Kondisi</label>
-                    <select id="editStatusKondisi" name="status_kondisi" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-agri-600">
-                        <option value="normal">Normal (Subur)</option>
-                        <option value="perhatian">Perlu Perhatian</option>
-                        <option value="masalah">Ada Masalah</option>
-                    </select>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jumlah Pohon / Tanaman *</label>
+                    <input type="number" id="editJumlahTanaman" name="jumlah_tanaman" required min="1"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-agri-600 focus:ring-2 focus:ring-agri-600/10">
                 </div>
             </div>
 
@@ -357,22 +344,15 @@
                     class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-agri-600 focus:ring-2 focus:ring-agri-600/10">
             </div>
 
-            <div class="grid grid-cols-3 gap-3">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jml Pohon</label>
-                    <input type="number" id="editJumlahTanaman" name="jumlah_tanaman" required min="1"
-                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                    <div class="text-[11px] text-slate-500 font-semibold uppercase">Status & Temuan Aktif (Otomatis)</div>
+                    <div class="font-bold text-slate-800 mt-1" id="editKondisiInfo">-</div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jml Hama</label>
-                    <input type="number" id="editJumlahHama" name="jumlah_hama" min="0"
-                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jml Masalah</label>
-                    <input type="number" id="editJumlahMasalah" name="jumlah_masalah" min="0"
-                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
-                </div>
+                <a href="{{ route('admin.laporan_masalah') }}" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-agri-700 hover:bg-agri-50 font-bold text-xs inline-flex items-center gap-1 shadow-sm">
+                    <span>Laporan Masalah</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
             </div>
 
             <!-- PIN MAP PICKER: EDIT BLOK -->
@@ -416,25 +396,10 @@
 </div>
 
 @push('scripts')
-@if(!empty($googleMapsApiKey))
-<script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey }}&callback=onGoogleMapsReady" async defer></script>
-@endif
-
 <script>
     const defaultKebunLat = {{ $kebun->latitude ?? -0.1234000 }};
     const defaultKebunLng = {{ $kebun->longitude ?? 109.3456000 }};
     const defaultRadius = {{ $kebun->radius_meter ?? 50 }};
-    const googleApiKey = "{{ $googleMapsApiKey }}";
-
-    let googleMapsReady = false;
-    window.onGoogleMapsReady = function () {
-        googleMapsReady = true;
-    };
-
-    window.gm_authFailure = function () {
-        console.warn("Google Maps Auth gagal di Master Lahan. Menggunakan Leaflet Satelit.");
-        googleMapsReady = false;
-    };
 
     // Objek Picker Manager
     let pickerEditBlok = null;
@@ -443,96 +408,23 @@
 
     /**
      * Factory function untuk membuat Universal Interactive Pin Map Picker
-     * Mendukung Google Maps (Hybrid) & Auto-fallback Leaflet Esri Satellite
+     * Menggunakan Leaflet High-Res Esri World Imagery (Satellite) & OSM Street Layer
+     * 100% Cepat, Responsif, Akurat, dan Bebas Error API Key / Quota.
      */
     function initInteractiveMapPicker(containerId, initialLat, initialLng, onLocationChange, isKebun = false, initialRadius = 50) {
         const container = document.getElementById(containerId);
         if (!container) return null;
         container.innerHTML = '';
 
-        let useGoogle = googleMapsReady && window.google && window.google.maps;
-
-        if (useGoogle) {
-            try {
-                const map = new google.maps.Map(container, {
-                    center: { lat: initialLat, lng: initialLng },
-                    zoom: 18,
-                    mapTypeId: 'hybrid',
-                    streetViewControl: false,
-                    mapTypeControl: false,
-                    fullscreenControl: false,
-                });
-
-                const pinIcon = isKebun 
-                    ? 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
-                    : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
-
-                const marker = new google.maps.Marker({
-                    position: { lat: initialLat, lng: initialLng },
-                    map: map,
-                    draggable: true,
-                    title: isKebun ? 'Pusat Kebun (Geser)' : 'Titik Blok (Geser)',
-                    icon: { url: pinIcon }
-                });
-
-                let circle = null;
-                if (isKebun) {
-                    circle = new google.maps.Circle({
-                        center: { lat: initialLat, lng: initialLng },
-                        radius: initialRadius,
-                        map: map,
-                        strokeColor: '#16a34a',
-                        strokeOpacity: 0.8,
-                        strokeWeight: 2,
-                        fillColor: '#22c55e',
-                        fillOpacity: 0.25,
-                    });
-                }
-
-                // Drag Marker Event
-                marker.addListener('dragend', function (e) {
-                    const lat = e.latLng.lat();
-                    const lng = e.latLng.lng();
-                    if (circle) circle.setCenter(e.latLng);
-                    onLocationChange(lat, lng);
-                });
-
-                // Click on Map to Move Marker
-                map.addListener('click', function (e) {
-                    marker.setPosition(e.latLng);
-                    if (circle) circle.setCenter(e.latLng);
-                    onLocationChange(e.latLng.lat(), e.latLng.lng());
-                });
-
-                return {
-                    engine: 'google',
-                    map: map,
-                    marker: marker,
-                    circle: circle,
-                    setCoordinates: function (lat, lng) {
-                        const pos = new google.maps.LatLng(lat, lng);
-                        marker.setPosition(pos);
-                        map.panTo(pos);
-                        if (circle) circle.setCenter(pos);
-                    },
-                    setRadius: function (r) {
-                        if (circle) circle.setRadius(parseFloat(r) || 50);
-                    },
-                    resize: function () {
-                        google.maps.event.trigger(map, 'resize');
-                        map.setCenter(marker.getPosition());
-                    }
-                };
-            } catch (err) {
-                console.warn("Gagal init Google Map picker, fallback ke Leaflet:", err);
-            }
-        }
-
-        // ==========================================
-        // LEAFLET SATELIT ENGINE (ESRI WORLD IMAGERY)
-        // ==========================================
+        // 1. Layer Satelit Esri World Imagery (High Resolution)
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; Esri World Imagery',
+            maxZoom: 19
+        });
+
+        // 2. Layer Jalan OpenStreetMap
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
             maxZoom: 19
         });
 
@@ -543,14 +435,23 @@
             attributionControl: false
         });
 
+        // Kontrol Layer Pilihan (Satelit vs Jalan)
+        L.control.layers({
+            "Satelit (Esri)": satelliteLayer,
+            "Jalan (OSM)": streetLayer
+        }, null, { position: 'topright' }).addTo(map);
+
         const pinColor = isKebun ? '#16a34a' : '#ef4444';
-        const pinIconHtml = `<div style="background: ${pinColor}; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; border: 2.5px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: grab;">${isKebun ? '🌱' : '📍'}</div>`;
+        const pinIconHtml = `
+            <div style="background: ${pinColor}; color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2.5px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.45); cursor: grab; transition: transform 0.15s ease;">
+                ${isKebun ? '🌱' : '<i class="fa-solid fa-location-dot"></i>'}
+            </div>`;
 
         const customIcon = L.divIcon({
             className: 'custom-picker-pin',
             html: pinIconHtml,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16]
+            iconSize: [34, 34],
+            iconAnchor: [17, 34]
         });
 
         const marker = L.marker([initialLat, initialLng], {
@@ -583,6 +484,15 @@
             onLocationChange(e.latlng.lat, e.latlng.lng);
         });
 
+        // Invalidate size saat modal selesai transisi
+        setTimeout(() => {
+            map.invalidateSize();
+            map.panTo([initialLat, initialLng]);
+        }, 150);
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 400);
+
         return {
             engine: 'leaflet',
             map: map,
@@ -610,11 +520,23 @@
         document.getElementById('formEditBlokAction').action = `/admin/master/lahan/blok/${blok.id}`;
         document.getElementById('editKodeBlok').value = blok.kode_blok;
         document.getElementById('editNamaBlok').value = blok.nama_blok || '';
-        document.getElementById('editStatusKondisi').value = blok.status_kondisi;
         document.getElementById('editJumlahTanaman').value = blok.jumlah_tanaman;
-        document.getElementById('editJumlahHama').value = blok.jumlah_hama || 0;
-        document.getElementById('editJumlahMasalah').value = blok.jumlah_masalah || 0;
         document.getElementById('editKeterangan').value = blok.keterangan || '';
+
+        // Status badge & info temuan otomatis
+        let badgeColor = 'bg-emerald-100 text-emerald-800';
+        let badgeText = 'Normal';
+        if (blok.status_kondisi === 'masalah') {
+            badgeColor = 'bg-rose-100 text-rose-800';
+            badgeText = 'Masalah';
+        } else if (blok.status_kondisi === 'perhatian') {
+            badgeColor = 'bg-amber-100 text-amber-800';
+            badgeText = 'Perhatian';
+        }
+        document.getElementById('editKondisiInfo').innerHTML = `
+            <span class="px-2 py-0.5 rounded-full text-xs font-bold ${badgeColor} mr-2">${badgeText}</span>
+            <span class="text-slate-600 font-medium">${blok.jumlah_hama || 0} Hama • ${blok.jumlah_masalah || 0} Masalah</span>
+        `;
 
         const lat = blok.latitude ? parseFloat(blok.latitude) : defaultKebunLat;
         const lng = blok.longitude ? parseFloat(blok.longitude) : defaultKebunLng;

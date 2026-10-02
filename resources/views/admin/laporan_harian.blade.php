@@ -72,16 +72,23 @@
                 @endif
             </div>
 
-            <div class="flex items-center gap-2">
-                <select name="user_id" onchange="this.form.submit()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-slate-50">
-                    <option value="">Semua Pekerja</option>
-                    @foreach($pekerjaList as $pk)
-                        <option value="{{ $pk->id }}" {{ request('user_id') == $pk->id ? 'selected' : '' }}>{{ $pk->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+            @if(Auth::user()->isAdmin())
+                <div class="flex items-center gap-2">
+                    <select name="user_id" onchange="this.form.submit()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-slate-50">
+                        <option value="">Semua Pekerja</option>
+                        @foreach($pekerjaList as $pk)
+                            <option value="{{ $pk->id }}" {{ request('user_id') == $pk->id ? 'selected' : '' }}>{{ $pk->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @else
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-agri-50 border border-agri-200 text-xs font-bold text-agri-800">
+                    <i class="fa-solid fa-user-circle text-agri-600"></i>
+                    <span>Laporan Saya: {{ Auth::user()->name }}</span>
+                </div>
+            @endif
 
-            @if(request()->filled('user_id') || $selectedDate !== \Carbon\Carbon::today()->toDateString())
+            @if((Auth::user()->isAdmin() && request()->filled('user_id')) || $selectedDate !== \Carbon\Carbon::today()->toDateString())
                 <a href="{{ route('admin.laporan_harian', ['period' => $period, 'view' => $viewMode]) }}" class="text-xs font-bold text-rose-600 hover:underline">
                     Reset Filter
                 </a>
